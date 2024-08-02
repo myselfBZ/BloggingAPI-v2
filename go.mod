@@ -3,6 +3,7 @@ module github.com/myselfBZ/Blog/v2
 go 1.22.5
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
