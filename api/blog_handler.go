@@ -2,11 +2,13 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/myselfBZ/Blog/v2/elasticsearch"
 	storeage "github.com/myselfBZ/Blog/v2/storage"
 	"github.com/myselfBZ/Blog/v2/types"
+	"github.com/olivere/elastic/v7"
 )
 
 //Common http errors
@@ -55,18 +57,24 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 func(h *Handler) SearchBlog(w http.ResponseWriter, r *http.Request){
     CheckMethod(w, r, http.MethodGet)
-    
+    log.Println("Method is get") 
     var query types.SearchQuery
     if err := json.NewDecoder(r.Body).Decode(&query); err != nil{
         WriteJSONErr(w)
         return 
     }
     
+    log.Println(query.Query) 
     results, err := h.Elastic.Search(r.Context(), query.Query)
     if err != nil{
+        if elastic.IsNotFound(err){
+            json.NewEncoder(w).Encode(NotFound)
+        }
+        log.Println(err)
         json.NewEncoder(w).Encode(InternaleServerErr)
         return 
     }
+    log.Println(results)
     var ids []map[string]interface{}
     for _, h := range results{
         var id map[string]interface{}
@@ -100,12 +108,21 @@ func (h *Handler) CreateBlog(w http.ResponseWriter, r *http.Request){
         WriteJSONErr(w)
         return 
     }
-    userId, _:= r.Context().Value("userId").(string)
-    blog.UserId = userId
-
+    log.Println(blog)
+    err := h.Store.InsertBlog(r.Context(),&blog)  
+    if err != nil{ 
+        log.Print(err)
+        json.NewEncoder(w).Encode(InternaleServerErr)
+        return 
+    }
+    err = h.Elastic.AddIndex(r.Context(), blog.Title, blog.ID)
+    if err != nil{
+        log.Print(err)
+    }
+    w.WriteHeader(http.StatusOK)
 }
 
-// Error handling functions 
+// Error handling functions, I know this looks awful 
 func WriteJSONErr(w http.ResponseWriter)  {
     json.NewEncoder(w).Encode(InvalidJSON) 
 }

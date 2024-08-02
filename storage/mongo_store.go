@@ -2,6 +2,7 @@ package storeage
 
 import (
 	"context"
+	"log"
 
 	"github.com/myselfBZ/Blog/v2/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -22,7 +23,7 @@ type Store interface{
 }
 
 
-func NewMongoProductStore(db *mongo.Database) *MongoStore {
+func NewMongoStore(db *mongo.Database) *MongoStore {
 	return &MongoStore{
 		db:   db,
 	}
@@ -32,10 +33,12 @@ func NewMongoProductStore(db *mongo.Database) *MongoStore {
 
 
 func (d *MongoStore) InsertBlog(ctx context.Context, blog *types.Blog) error {
-    _, err := d.db.Collection("blogs").InsertOne(ctx, blog)
+    log.Print(blog)
+    r, err := d.db.Collection("blogs").InsertOne(ctx, *blog)
 	if err != nil {
 		return err
 	} 
+    blog.ID = r.InsertedID.(primitive.ObjectID).Hex()
     return err
 }
 
@@ -58,11 +61,10 @@ func (d *MongoStore) DeleteBlog(ctx context.Context, id string )error  {
 
 
 func (d *MongoStore) InsertUser(ctx context.Context, user *types.User) error {
-    r, err := d.db.Collection("users").InsertOne(ctx, user) 
+    _, err := d.db.Collection("users").InsertOne(ctx, user) 
     if err != nil {
         return err 
     }
-    user.ID = r.InsertedID.(primitive.ObjectID).Hex()
     return err
 }
 
