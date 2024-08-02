@@ -14,3 +14,7 @@ type Blog struct{
     Content string  `json:"content" bson:"content"`
     Title   string  `json:"title" bson:"title"`
 }
+
+type SearchQuery struct {
+    Query string `json:"query"`
+}   
