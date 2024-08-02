@@ -57,24 +57,22 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 func(h *Handler) SearchBlog(w http.ResponseWriter, r *http.Request){
     CheckMethod(w, r, http.MethodGet)
-    log.Println("Method is get") 
     var query types.SearchQuery
     if err := json.NewDecoder(r.Body).Decode(&query); err != nil{
         WriteJSONErr(w)
         return 
     }
     
-    log.Println(query.Query) 
     results, err := h.Elastic.Search(r.Context(), query.Query)
     if err != nil{
         if elastic.IsNotFound(err){
+            w.WriteHeader(http.StatusNotFound)
             json.NewEncoder(w).Encode(NotFound)
+            return 
         }
-        log.Println(err)
         json.NewEncoder(w).Encode(InternaleServerErr)
         return 
     }
-    log.Println(results)
     var ids []map[string]interface{}
     for _, h := range results{
         var id map[string]interface{}
@@ -108,10 +106,8 @@ func (h *Handler) CreateBlog(w http.ResponseWriter, r *http.Request){
         WriteJSONErr(w)
         return 
     }
-    log.Println(blog)
     err := h.Store.InsertBlog(r.Context(),&blog)  
     if err != nil{ 
-        log.Print(err)
         json.NewEncoder(w).Encode(InternaleServerErr)
         return 
     }

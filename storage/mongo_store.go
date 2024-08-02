@@ -2,8 +2,6 @@ package storeage
 
 import (
 	"context"
-	"log"
-
 	"github.com/myselfBZ/Blog/v2/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -33,7 +31,6 @@ func NewMongoStore(db *mongo.Database) *MongoStore {
 
 
 func (d *MongoStore) InsertBlog(ctx context.Context, blog *types.Blog) error {
-    log.Print(blog)
     r, err := d.db.Collection("blogs").InsertOne(ctx, *blog)
 	if err != nil {
 		return err
