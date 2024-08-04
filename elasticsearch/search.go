@@ -13,7 +13,7 @@ type ElasticSearch struct{
 
 
 func(e *ElasticSearch) Search(ctx context.Context, title string) ([]*elastic.SearchHit, error) {
-    r, err := e.Client.Search().Index(title).Do(ctx)
+    r, err := e.Client.Search().Index("myblogs").Do(ctx)
     if err != nil{
         return nil, err
     }
@@ -24,7 +24,7 @@ func(e *ElasticSearch) AddIndex(ctx context.Context, title string, id string) er
     doc := map[string]string{
         "id":id,
     }
-    _, err := e.Client.Index().Index(title).BodyJson(doc).Do(ctx)
+    _, err := e.Client.Index().Index("myblogs").Id(title).BodyJson(doc).Do(ctx)
     return err
 }
 

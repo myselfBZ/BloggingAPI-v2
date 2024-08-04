@@ -116,6 +116,7 @@ func (h *Handler) CreateBlog(w http.ResponseWriter, r *http.Request){
         log.Print(err)
     }
     w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(blog)
 }
 
 // Error handling functions, I know this looks awful 
